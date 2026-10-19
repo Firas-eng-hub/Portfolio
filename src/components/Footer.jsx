@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Heart, ArrowUp } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
+import AnalyticsConsent from './AnalyticsConsent';
 import profile from '../config/profile';
 
 /**
@@ -85,6 +86,8 @@ const Footer = () => {
             </ul>
           </div>
         </div>
+
+        <AnalyticsConsent />
 
         {/* Bottom Bar */}
         <div className="pt-8 border-t border-metallic-gold/10">

@@ -106,3 +106,27 @@ Note: This will impact Vite dev & build performances.
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+## SEO and Google Analytics 4
+
+The production build includes crawlable profile HTML (before React loads), Person/ProfilePage structured data, a canonical URL, social sharing metadata, a 1200×630 share image, a custom favicon, `robots.txt`, and `sitemap.xml`. The default canonical URL is `https://portfolioo-psi-rouge.vercel.app/`. Only the homepage belongs in the sitemap; section anchors are not separate pages. React replaces the static profile with the interactive portfolio when JavaScript loads. Keep the static template in `scripts/seo.js` aligned with the visible sections when changing the design; profile content is shared from `src/config/profile.js`.
+
+### Configure Vercel
+
+1. In Vercel **Project → Settings → Environment Variables**, set `VITE_SITE_URL` to your final HTTPS website URL if it differs from the default. Use the same domain consistently; redirect alternate domains to it.
+2. In Google Analytics, create a **GA4 property → Web data stream** for your website. Copy its **Measurement ID** (`G-…`, not the property ID).
+3. The public GA4 Measurement ID `G-S8YQ2TNYDZ` is configured in the tracked `.env.production` file. Vercel Production environment variables can override it; set `VITE_GA_MEASUREMENT_ID` to an empty value to disable analytics. Vercel preview deployments disable analytics automatically. These `VITE_` values are public build settings, never credentials. Redeploy after changing them.
+4. In the web stream's **Enhanced measurement** settings, disable automatic form interactions, outbound clicks, and browser-history page changes for this configuration. This implementation sends one explicit page view per accepted page load; avoid duplicate tracking or collecting email/phone link targets. Do not install another GA tag or GTM container alongside it.
+5. On the deployed site, accept analytics and check **GA4 → Realtime** for your visit (ad blockers may prevent collection). Declining analytics must produce no initial Google tag request. Use **Analytics preferences** in the footer to withdraw consent. Analytics never initializes in `npm run dev` or without a valid ID. It sends no contact form contents or custom lead events; the current contact form only simulates submission.
+
+Analytics is opt-in: no Google tag is loaded until accepted. Choices persist locally; withdrawal disables collection and removes accessible GA cookies. Query strings and fragments are excluded from the configured page location, and only the referrer's origin is sent. Add a site-specific privacy notice explaining your GA usage, retention, and contact details before enabling analytics; the Google privacy link does not replace your own notice.
+
+For local production testing, run `npm run build` and `npm run preview`; the configured production ID is used. To override it locally, copy `.env.example` to `.env.local` and enter your ID. Never commit local environment files.
+
+### Google Search Console
+
+After deployment, add and verify the site in [Google Search Console](https://search.google.com/search-console/) (DNS verification for a domain property, or the supplied HTML file for a URL-prefix property). Submit `https://portfolioo-psi-rouge.vercel.app/sitemap.xml` and use URL Inspection to request indexing of the homepage. Check that Vercel deployment protection is off for the public production site. Search indexing and rankings are controlled by Google and are not guaranteed by these files.
+
+### Validation
+
+Run `node --test tests/*.test.js` and `npm run build`. Check the deployed HTML source for the profile content, canonical link, and JSON-LD, and fetch `/robots.txt`, `/sitemap.xml`, and `/social-preview.png`. Run PageSpeed Insights on the deployed site to measure Core Web Vitals. The existing large animation bundle remains a performance improvement opportunity; code splitting and animation optimizations can be handled separately.
